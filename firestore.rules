@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Riwayat chat: tiap user cuma boleh baca/tulis chat MILIKNYA sendiri
+    // (dicek dari uid di path harus sama dengan uid yang lagi login).
+    // Ini dipakai client langsung (bukan lewat server) supaya bisa sinkron
+    // real-time antar device.
+    match /users/{uid}/chats/{chatId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Semua yang lain (termasuk collection "usage" buat limit harian)
+    // TIDAK BOLEH diakses langsung dari browser. Cuma server (Admin SDK
+    // di api/chat.js, api/admin-stats.js dkk) yang bisa, karena Admin SDK
+    // otomatis bypass rules ini. Ini sengaja dikunci ketat biar user gak
+    // bisa reset/manipulasi counter limit-nya sendiri lewat DevTools.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

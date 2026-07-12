@@ -1,0 +1,13 @@
+{
+  "name": "slowhead-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SlowHead AI - chat AI oleh BeeThere, ditenagai Gemini",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0"
+  }
+}
