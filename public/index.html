@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SlowHead AI — mikir pelan, jawab cepat</title>
+<meta name="description" content="SlowHead AI, chat AI oleh BeeThere. Jawaban singkat, langsung ke inti." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14170f;
+    --bg-soft: #1b1f16;
+    --surface: #232819;
+    --surface-2: #2b3120;
+    --line: #363d28;
+    --cream: #f1ecda;
+    --cream-dim: #c7c2ab;
+    --moss: #8fa37e;
+    --moss-dim: #5c6b4e;
+    --amber: #d9a441;
+    --amber-dim: #a97f34;
+    --danger: #c0685a;
+    --radius: 18px;
+    --sidebar-w: 264px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(143,163,126,0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(217,164,65,0.07), transparent 55%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ---------- AUTH SCREEN ---------- */
+  #authScreen{
+    position:fixed; inset:0; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--bg);
+    padding: 20px;
+  }
+  #authScreen.hidden{ display:none; }
+  .auth-card{
+    width:100%; max-width:360px;
+    background: var(--bg-soft);
+    border:1px solid var(--line);
+    border-radius: 20px;
+    padding: 32px 28px;
+  }
+  .auth-brand{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .auth-brand h1{ font-family:'Fraunces', serif; font-size:1.3rem; margin:0; }
+  .auth-brand p{ margin:2px 0 0; font-size:0.75rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
+
+  .auth-tabs{ display:flex; gap:6px; margin-bottom:18px; background: var(--surface); border-radius:12px; padding:4px; }
+  .auth-tab{
+    flex:1; text-align:center; padding:8px 0; border-radius:9px; cursor:pointer;
+    font-size:0.85rem; color: var(--cream-dim); font-weight:500;
+  }
+  .auth-tab.active{ background: var(--surface-2); color: var(--cream); }
+
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:0.78rem; color: var(--cream-dim); margin-bottom:5px; }
+  .field input{
+    width:100%; background: var(--surface); border:1px solid var(--line); color: var(--cream);
+    padding:10px 12px; border-radius:10px; font-size:0.9rem; font-family:'Inter', sans-serif; outline:none;
+  }
+  .field input:focus{ border-color: var(--moss); }
+
+  .auth-submit{
+    width:100%; background: var(--amber); color: var(--bg); border:none; border-radius:12px;
+    padding:11px 0; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:4px;
+  }
+  .auth-submit:hover{ background:#e6b451; }
+  .auth-submit:disabled{ background: var(--surface-2); color: var(--cream-dim); cursor:not-allowed; }
+
+  .auth-error{
+    background: rgba(192,104,90,0.12); border:1px solid var(--danger); color:#e3a89d;
+    font-size:0.8rem; padding:8px 11px; border-radius:9px; margin-bottom:12px; display:none;
+  }
+  .auth-error.show{ display:block; }
+
+  .auth-note{
+    font-size:0.72rem; color: var(--cream-dim); text-align:center; margin-top:16px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    position:relative; z-index:1; display:flex; height:100vh; overflow:hidden;
+  }
+  .layout.hidden{ display:none; }
+
+  .sidebar{
+    width: var(--sidebar-w); flex-shrink:0; background: var(--bg-soft);
+    border-right: 1px solid var(--line); display:flex; flex-direction:column;
+    padding: 18px 14px; transition: margin-left .2s ease;
+  }
+  .sidebar-brand{ display:flex; align-items:center; gap:10px; padding: 4px 6px 16px; }
+  .mark{
+    width:32px; height:32px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim));
+    position:relative; flex-shrink:0; animation: breathe 4.5s ease-in-out infinite;
+  }
+  .mark::after{
+    content:""; position:absolute; top:12px; left:7px; width:7px; height:2px; border-radius:2px;
+    background: var(--bg); box-shadow: 10.5px 0 0 var(--bg); animation: blink 4.5s ease-in-out infinite;
+  }
+  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+  @keyframes blink{ 0%,92%,100%{ height:2px; top:12px; } 96%{ height:0.5px; top:13px; } }
+  .sidebar-brand h1{ font-family:'Fraunces', serif; font-size:1.05rem; font-weight:600; margin:0; }
+  .sidebar-brand p{ margin:1px 0 0; font-size:0.68rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
+
+  .quota-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    background: var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:9px 12px; margin-bottom:14px; font-size:0.78rem; color: var(--cream-dim);
+  }
+  .quota-badge strong{ color: var(--amber); font-family:'IBM Plex Mono', monospace; }
+
+  .new-chat-btn{
+    display:flex; align-items:center; gap:8px; width:100%; background: var(--surface);
+    border:1px solid var(--line); color: var(--cream); padding:10px 12px; border-radius:12px;
+    font-family:'Inter', sans-serif; font-size:0.85rem; font-weight:500; cursor:pointer;
+    transition: border-color .15s, background .15s; margin-bottom:14px;
+  }
+  .new-chat-btn:hover{ border-color: var(--amber); background: var(--surface-2); }
+
+  .history-label{
+    font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color: var(--cream-dim);
+    font-family:'IBM Plex Mono', monospace; padding: 4px 8px 8px;
+  }
+
+  #chatList{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:3px; }
+  .chat-item{
+    display:flex; align-items:center; justify-content:space-between; gap:6px; padding:9px 10px;
+    border-radius:10px; cursor:pointer; font-size:0.83rem; color: var(--cream-dim); border:1px solid transparent;
+  }
+  .chat-item:hover{ background: var(--surface); color: var(--cream); }
+  .chat-item.active{ background: var(--surface-2); border-color: var(--moss-dim); color: var(--cream); }
+  .chat-item span.title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+  .chat-item .del{
+    opacity:0; flex-shrink:0; color: var(--cream-dim); font-size:0.9rem; line-height:1;
+    padding:2px 5px; border-radius:6px;
+  }
+  .chat-item:hover .del{ opacity:0.7; }
+  .chat-item .del:hover{ opacity:1; color: var(--amber); background: var(--bg-soft); }
+  .empty-history{ color: var(--cream-dim); font-size:0.78rem; padding: 8px 10px; font-style:italic; }
+
+  .sidebar-footer{
+    border-top:1px solid var(--line); padding-top:12px; margin-top:10px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .user-email{ font-size:0.74rem; color: var(--cream-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
+  .logout-btn{
+    background:none; border:1px solid var(--line); color: var(--cream-dim); border-radius:8px;
+    padding:5px 9px; font-size:0.72rem; cursor:pointer;
+  }
+  .logout-btn:hover{ border-color: var(--danger); color: var(--danger); }
+
+  /* ---------- CONTENT ---------- */
+  .content{ flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+
+  header{
+    display:flex; align-items:center; justify-content:space-between; padding: 18px 28px;
+    border-bottom: 1px solid var(--line); background: linear-gradient(to bottom, var(--bg-soft), transparent);
+    flex-shrink:0;
+  }
+  .header-left{ display:flex; align-items:center; gap:12px; }
+  #sidebarToggle{
+    display:none; background:none; border:1px solid var(--line); color:var(--cream);
+    border-radius:8px; padding:6px 9px; cursor:pointer;
+  }
+  header h2{ font-family:'Fraunces', serif; font-size:1.05rem; font-weight:600; margin:0; }
+  .by{
+    font-size:0.72rem; color: var(--moss); font-family:'IBM Plex Mono', monospace;
+    border:1px solid var(--line); padding:5px 10px; border-radius:999px; white-space:nowrap;
+  }
+
+  main{
+    flex:1; display:flex; flex-direction:column; max-width:760px; width:100%;
+    margin:0 auto; padding: 24px 20px 0; overflow:hidden; min-height:0;
+  }
+
+  #log{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-bottom:20px; }
+
+  .empty-state{ margin:auto; text-align:center; color: var(--cream-dim); max-width:380px; }
+  .empty-state h2{ font-family:'Fraunces', serif; font-weight:600; font-size:1.6rem; color:var(--cream); margin-bottom:8px; }
+  .empty-state p{ font-size:0.92rem; line-height:1.5; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; }
+  .chip{
+    font-size:0.8rem; padding:7px 13px; border-radius:999px; border:1px solid var(--line);
+    background: var(--surface); color: var(--cream-dim); cursor:pointer; transition: border-color .15s, color .15s;
+  }
+  .chip:hover{ border-color: var(--moss); color: var(--cream); }
+
+  .row{ display:flex; gap:10px; align-items:flex-end; }
+  .row.user{ flex-direction:row-reverse; }
+  .avatar{
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim));
+  }
+  .row.user .avatar{ background: radial-gradient(circle at 35% 30%, var(--amber), var(--amber-dim)); }
+
+  .bubble{
+    max-width:78%; padding:12px 15px; border-radius: var(--radius); font-size:0.95rem;
+    line-height:1.5; white-space:pre-wrap; word-wrap:break-word;
+  }
+  .row.ai .bubble{ background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius:4px; }
+  .row.user .bubble{
+    background: var(--surface-2); border: 1px solid var(--amber-dim);
+    border-bottom-right-radius:4px; color: var(--cream);
+  }
+  .bubble.error{ border-color: var(--danger); color:#e3a89d; }
+
+  .thinking{ display:flex; gap:5px; padding:14px 4px; }
+  .thinking span{ width:6px; height:6px; border-radius:50%; background: var(--moss); animation: slowpulse 1.8s ease-in-out infinite; }
+  .thinking span:nth-child(2){ animation-delay:.3s; }
+  .thinking span:nth-child(3){ animation-delay:.6s; }
+  @keyframes slowpulse{ 0%,100%{ opacity:.25; transform:translateY(0); } 50%{ opacity:1; transform:translateY(-3px); } }
+
+  form{
+    display:flex; gap:10px; padding: 16px 0 22px; border-top: 1px solid var(--line);
+    margin-top:auto; flex-shrink:0;
+  }
+  textarea{
+    flex:1; resize:none; background: var(--surface); border:1px solid var(--line); border-radius: 14px;
+    color: var(--cream); padding:12px 14px; font-family:'Inter', sans-serif; font-size:0.95rem;
+    max-height:120px; outline:none;
+  }
+  textarea:focus{ border-color: var(--moss); }
+  textarea:disabled{ opacity:0.5; }
+  textarea::placeholder{ color: var(--cream-dim); }
+
+  button{
+    background: var(--amber); color: var(--bg); border:none; border-radius:14px; padding:0 20px;
+    font-weight:600; font-family:'Inter', sans-serif; font-size:0.9rem; cursor:pointer;
+    transition: background .15s, transform .1s;
+  }
+  button:hover{ background:#e6b451; }
+  button:active{ transform:scale(0.97); }
+  button:disabled{ background: var(--surface-2); color: var(--cream-dim); cursor:not-allowed; }
+
+  footer{
+    text-align:center; font-size:0.72rem; color: var(--cream-dim); font-family:'IBM Plex Mono', monospace;
+    padding-bottom:10px; flex-shrink:0;
+  }
+
+  @media (prefers-reduced-motion: reduce){ .mark, .mark::after, .thinking span{ animation: none !important; } }
+
+  #log::-webkit-scrollbar, #chatList::-webkit-scrollbar{ width:6px; }
+  #log::-webkit-scrollbar-thumb, #chatList::-webkit-scrollbar-thumb{ background: var(--line); border-radius:3px; }
+
+  @media (max-width: 720px){
+    .sidebar{
+      position:fixed; top:0; bottom:0; left:0; z-index:10;
+      margin-left: calc(-1 * var(--sidebar-w)); box-shadow: 20px 0 40px rgba(0,0,0,0.4);
+    }
+    .sidebar.open{ margin-left:0; }
+    #sidebarToggle{ display:inline-flex; }
+    header{ padding: 16px 16px; }
+    main{ padding: 16px 14px 0; }
+    .bubble{ max-width:88%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>SlowHead AI</h1>
+        <p>by BeeThere</p>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-mode="login">Masuk</div>
+      <div class="auth-tab" data-mode="signup">Daftar</div>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <form id="authForm">
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" required autocomplete="current-password" minlength="6" />
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmit">Masuk</button>
+    </form>
+
+    <p class="auth-note">Limit 5 pesan/hari per akun</p>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="layout hidden" id="appLayout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>SlowHead AI</h1>
+        <p>by BeeThere</p>
+      </div>
+    </div>
+
+    <div class="quota-badge">
+      <span>Sisa hari ini</span>
+      <strong id="quotaText">–/5</strong>
+    </div>
+
+    <button class="new-chat-btn" id="newChatBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Chat baru
+    </button>
+
+    <div class="history-label">Riwayat</div>
+    <div id="chatList"></div>
+
+    <div class="sidebar-footer">
+      <span class="user-email" id="userEmail"></span>
+      <button class="logout-btn" id="logoutBtn">Keluar</button>
+    </div>
+  </aside>
+
+  <div class="content">
+    <header>
+      <div class="header-left">
+        <button id="sidebarToggle" aria-label="Buka riwayat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h2 id="chatTitle">Chat baru</h2>
+      </div>
+      <span class="by">mikir pelan, jawab cepat</span>
+    </header>
+
+    <main>
+      <div id="log"></div>
+      <form id="chatForm">
+        <textarea id="input" rows="1" placeholder="Ketik pertanyaan lo..."></textarea>
+        <button type="submit" id="sendBtn">Kirim</button>
+      </form>
+    </main>
+
+    <footer>SlowHead AI &middot; ditenagai Gemini &middot; dikembangkan oleh BeeThere</footer>
+  </div>
+</div>
+
+<!-- Firebase (client SDK, modular v10 via CDN) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // ===== GANTI dengan Firebase config project lo sendiri =====
+  // Ambil dari: Firebase Console -> Project settings -> General -> Your apps -> Web app
+  // Config ini AMAN buat ditaruh di client (bukan rahasia), keamanan diatur
+  // lewat Firestore rules + verifikasi ID token di server.
+  const firebaseConfig = {
+    apiKey: "GANTI_DENGAN_API_KEY_FIREBASE",
+    authDomain: "GANTI.firebaseapp.com",
+    projectId: "GANTI",
+    storageBucket: "GANTI.appspot.com",
+    messagingSenderId: "GANTI",
+    appId: "GANTI",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ---------- DOM refs ----------
+  const authScreen = document.getElementById('authScreen');
+  const appLayout = document.getElementById('appLayout');
+  const authForm = document.getElementById('authForm');
+  const authEmail = document.getElementById('authEmail');
+  const authPassword = document.getElementById('authPassword');
+  const authError = document.getElementById('authError');
+  const authSubmit = document.getElementById('authSubmit');
+  const authTabs = document.querySelectorAll('.auth-tab');
+  const userEmailEl = document.getElementById('userEmail');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const quotaText = document.getElementById('quotaText');
+
+  const log = document.getElementById('log');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatList = document.getElementById('chatList');
+  const chatTitle = document.getElementById('chatTitle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const newChatBtn = document.getElementById('newChatBtn');
+
+  let authMode = 'login';
+  let currentUser = null;
+  let remaining = null;
+  let limitTotal = 5;
+
+  // ---------- Auth tab switch ----------
+  authTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      authTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      authMode = tab.dataset.mode;
+      authSubmit.textContent = authMode === 'login' ? 'Masuk' : 'Daftar';
+      authError.classList.remove('show');
+    });
+  });
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError.classList.remove('show');
+    authSubmit.disabled = true;
+    authSubmit.textContent = 'Tunggu...';
+
+    try {
+      if (authMode === 'login') {
+        await signInWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value);
+      } else {
+        await createUserWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value);
+      }
+      // onAuthStateChanged bakal handle sisanya
+    } catch (err) {
+      authError.textContent = mapAuthError(err.code);
+      authError.classList.add('show');
+    } finally {
+      authSubmit.disabled = false;
+      authSubmit.textContent = authMode === 'login' ? 'Masuk' : 'Daftar';
+    }
+  });
+
+  function mapAuthError(code) {
+    const map = {
+      'auth/invalid-email': 'Format email salah.',
+      'auth/user-not-found': 'Akun gak ditemukan. Coba daftar dulu.',
+      'auth/wrong-password': 'Password salah.',
+      'auth/invalid-credential': 'Email atau password salah.',
+      'auth/email-already-in-use': 'Email ini udah dipakai. Coba masuk aja.',
+      'auth/weak-password': 'Password minimal 6 karakter.',
+    };
+    return map[code] || 'Terjadi kesalahan, coba lagi.';
+  }
+
+  logoutBtn.addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      authScreen.classList.add('hidden');
+      appLayout.classList.remove('hidden');
+      userEmailEl.textContent = user.email;
+      input.disabled = false;
+      initChatsForUser(user.uid);
+      await refreshQuota();
+    } else {
+      authScreen.classList.remove('hidden');
+      appLayout.classList.add('hidden');
+    }
+  });
+
+  async function getToken() {
+    if (!currentUser) return null;
+    return currentUser.getIdToken();
+  }
+
+  async function refreshQuota() {
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/usage', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      if (res.ok) {
+        remaining = data.remaining;
+        limitTotal = data.limit;
+        renderQuota();
+      }
+    } catch {}
+  }
+
+  function renderQuota() {
+    quotaText.textContent = (remaining ?? '–') + '/' + limitTotal;
+    const empty = remaining === 0;
+    input.disabled = empty;
+    sendBtn.disabled = empty;
+    input.placeholder = empty ? 'Limit harian abis, besok lagi ya' : 'Ketik pertanyaan lo...';
+  }
+
+  // ---------- Per-user chat history, synced lewat Firestore (users/{uid}/chats) ----------
+  // Disimpen di server (Firestore), bukan localStorage lagi -> otomatis
+  // sinkron real-time ke semua device yang login pakai akun yang sama.
+  let chats = {};           // cache lokal dari snapshot Firestore, key = chatId
+  let activeId = null;      // chat yang lagi dibuka (cuma lokal, gak perlu sync)
+  let isSending = false;    // guard biar snapshot gak nimpa UI pas lagi kirim pesan
+  let unsubscribeChats = null;
+  let currentUid = null;
+
+  function chatsCollection(uid) {
+    return collection(db, 'users', uid, 'chats');
+  }
+
+  function initChatsForUser(uid) {
+    currentUid = uid;
+    if (unsubscribeChats) unsubscribeChats();
+
+    const q = query(chatsCollection(uid), orderBy('updatedAt', 'desc'));
+    unsubscribeChats = onSnapshot(q, (snapshot) => {
+      chats = {};
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        chats[docSnap.id] = {
+          id: docSnap.id,
+          title: d.title || 'Chat baru',
+          messages: d.messages || [],
+        };
+      });
+
+      if (!activeId || !chats[activeId]) {
+        const first = Object.keys(chats)[0];
+        if (first) {
+          activeId = first;
+        } else {
+          if (!isSending) createChat();
+          return;
+        }
+      }
+
+      renderSidebar();
+      if (!isSending) renderActiveChat();
+    }, (err) => {
+      console.error('Gagal sinkron riwayat chat:', err);
+    });
+  }
+
+  async function createChat(){
+    const ref = await addDoc(chatsCollection(currentUid), {
+      title: 'Chat baru',
+      messages: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    activeId = ref.id;
+    input.focus();
+  }
+
+  async function deleteChat(id, e){
+    e.stopPropagation();
+    const wasActive = activeId === id;
+    await deleteDoc(doc(db, 'users', currentUid, 'chats', id));
+    if (wasActive) activeId = null; // snapshot listener bakal pilihin/bikin chat baru
+  }
+
+  function switchChat(id){
+    activeId = id; renderSidebar(); renderActiveChat();
+    if (window.innerWidth <= 720) sidebar.classList.remove('open');
+  }
+
+  async function persistActiveChat(newMessages, newTitle){
+    if (!currentUid || !activeId) return;
+    const payload = { messages: newMessages, updatedAt: serverTimestamp() };
+    if (newTitle) payload.title = newTitle;
+    await updateDoc(doc(db, 'users', currentUid, 'chats', activeId), payload);
+  }
+
+  function renderSidebar(){
+    const items = Object.values(chats).sort((a,b) => b.createdAt - a.createdAt);
+    if (items.length === 0) { chatList.innerHTML = '<div class="empty-history">Belum ada riwayat.</div>'; return; }
+    chatList.innerHTML = '';
+    items.forEach(chat => {
+      const el = document.createElement('div');
+      el.className = 'chat-item' + (chat.id === activeId ? ' active' : '');
+      el.innerHTML = '<span class="title"></span><span class="del" title="Hapus">&times;</span>';
+      el.querySelector('.title').textContent = chat.title;
+      el.addEventListener('click', () => switchChat(chat.id));
+      el.querySelector('.del').addEventListener('click', (e) => deleteChat(chat.id, e));
+      chatList.appendChild(el);
+    });
+  }
+
+  function renderActiveChat(){
+    const chat = chats[activeId];
+    log.innerHTML = '';
+    if (!chat) return;
+    chatTitle.textContent = chat.title;
+
+    if (chat.messages.length === 0) {
+      log.innerHTML = `
+        <div class="empty-state" id="emptyState">
+          <h2>Langsung aja.</h2>
+          <p>SlowHead gak suka basa-basi. Tanya apa aja, dijawab inti-nya doang.</p>
+          <div class="chips">
+            <span class="chip" data-q="Apa itu recursion?">Apa itu recursion?</span>
+            <span class="chip" data-q="Kenapa langit biru?">Kenapa langit biru?</span>
+            <span class="chip" data-q="Tips deploy Vercel biar gak error">Tips deploy Vercel</span>
+          </div>
+        </div>`;
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          input.value = chip.dataset.q; autoGrow(); form.requestSubmit();
+        });
+      });
+      return;
+    }
+    chat.messages.forEach(m => addBubble(m.role === 'model' ? 'ai' : 'user', m.text, false));
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function autoGrow(){ input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; }
+  input.addEventListener('input', autoGrow);
+
+  function addBubble(role, text, scroll = true, isError = false){
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) emptyState.remove();
+    const row = document.createElement('div');
+    row.className = 'row ' + (role === 'user' ? 'user' : 'ai');
+    row.innerHTML = '<div class="avatar" aria-hidden="true"></div><div class="bubble' + (isError ? ' error' : '') + '"></div>';
+    row.querySelector('.bubble').textContent = text;
+    log.appendChild(row);
+    if (scroll) log.scrollTop = log.scrollHeight;
+    return row;
+  }
+
+  function addThinking(){
+    const row = document.createElement('div');
+    row.className = 'row ai'; row.id = 'thinkingRow';
+    row.innerHTML = '<div class="avatar" aria-hidden="true"></div><div class="bubble thinking"><span></span><span></span><span></span></div>';
+    log.appendChild(row); log.scrollTop = log.scrollHeight;
+  }
+  function removeThinking(){ const row = document.getElementById('thinkingRow'); if (row) row.remove(); }
+
+  newChatBtn.addEventListener('click', createChat);
+  sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || remaining === 0) return;
+    const chat = chats[activeId];
+    if (!chat) return;
+
+    isSending = true;
+    addBubble('user', text);
+    chat.messages.push({ role: 'user', text });
+    const isFirstMessage = chat.messages.length === 1;
+    if (isFirstMessage) {
+      chat.title = text.slice(0, 34) + (text.length > 34 ? '…' : '');
+      chatTitle.textContent = chat.title;
+    }
+
+    input.value = ''; autoGrow(); sendBtn.disabled = true; addThinking();
+
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ messages: chat.messages })
+      });
+      const data = await res.json();
+      removeThinking();
+
+      if (!res.ok) {
+        addBubble('ai', data.error || 'Gagal dapat jawaban.', true, true);
+        if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
+        // tetap simpen pesan user-nya walau gagal, biar gak ilang
+        await persistActiveChat(chat.messages, isFirstMessage ? chat.title : undefined);
+        return;
+      }
+
+      addBubble('ai', data.reply);
+      chat.messages.push({ role: 'model', text: data.reply });
+      await persistActiveChat(chat.messages, isFirstMessage ? chat.title : undefined);
+      if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
+    } catch (err) {
+      removeThinking();
+      addBubble('ai', 'Koneksi gagal. Coba lagi.', true, true);
+    } finally {
+      isSending = false;
+      sendBtn.disabled = (remaining === 0);
+      input.focus();
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+</script>
+
+</body>
+</html>

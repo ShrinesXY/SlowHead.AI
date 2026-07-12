@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SlowHead AI — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14170f; --bg-soft: #1b1f16; --surface: #232819; --surface-2: #2b3120;
+    --line: #363d28; --cream: #f1ecda; --cream-dim: #c7c2ab;
+    --moss: #8fa37e; --moss-dim: #5c6b4e; --amber: #d9a441; --amber-dim: #a97f34;
+    --danger:#c0685a;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--cream); font-family:'Inter',sans-serif; }
+
+  .center{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card{ width:100%; max-width:360px; background:var(--bg-soft); border:1px solid var(--line); border-radius:20px; padding:32px 28px; }
+  .card h1{ font-family:'Fraunces',serif; font-size:1.25rem; margin:0 0 4px; }
+  .card p.sub{ font-size:0.78rem; color:var(--moss); font-family:'IBM Plex Mono',monospace; margin:0 0 20px; }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:0.78rem; color:var(--cream-dim); margin-bottom:5px; }
+  .field input{
+    width:100%; background:var(--surface); border:1px solid var(--line); color:var(--cream);
+    padding:10px 12px; border-radius:10px; font-size:0.9rem; outline:none;
+  }
+  .field input:focus{ border-color:var(--moss); }
+  .submit{
+    width:100%; background:var(--amber); color:var(--bg); border:none; border-radius:12px;
+    padding:11px 0; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:4px;
+  }
+  .submit:hover{ background:#e6b451; }
+  .err{
+    background:rgba(192,104,90,0.12); border:1px solid var(--danger); color:#e3a89d;
+    font-size:0.8rem; padding:8px 11px; border-radius:9px; margin-bottom:12px; display:none;
+  }
+  .err.show{ display:block; }
+
+  #dash{ display:none; max-width:920px; margin:0 auto; padding:32px 24px; }
+  #dash.show{ display:block; }
+  .dash-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .dash-header h1{ font-family:'Fraunces',serif; font-size:1.4rem; margin:0; }
+  .dash-header p{ font-size:0.75rem; color:var(--moss); font-family:'IBM Plex Mono',monospace; margin:2px 0 0; }
+  .logout{
+    background:none; border:1px solid var(--line); color:var(--cream-dim); border-radius:8px;
+    padding:7px 12px; font-size:0.8rem; cursor:pointer;
+  }
+  .logout:hover{ border-color:var(--danger); color:var(--danger); }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
+  .stat-card{ background:var(--bg-soft); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .stat-card .num{ font-family:'Fraunces',serif; font-size:1.8rem; color:var(--amber); }
+  .stat-card .label{ font-size:0.78rem; color:var(--cream-dim); margin-top:2px; }
+
+  table{ width:100%; border-collapse:collapse; background:var(--bg-soft); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  th, td{ text-align:left; padding:11px 14px; font-size:0.85rem; border-bottom:1px solid var(--line); }
+  th{ color:var(--cream-dim); font-weight:500; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em; background:var(--surface); }
+  tr:last-child td{ border-bottom:none; }
+  .badge{
+    display:inline-block; padding:2px 9px; border-radius:999px; font-size:0.75rem; font-family:'IBM Plex Mono',monospace;
+  }
+  .badge.full{ background:rgba(192,104,90,0.15); color:#e3a89d; }
+  .badge.ok{ background:rgba(143,163,126,0.15); color:var(--moss); }
+  .empty{ text-align:center; color:var(--cream-dim); padding:40px 0; font-size:0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="center" id="loginScreen">
+  <div class="card">
+    <h1>SlowHead AI</h1>
+    <p class="sub">admin panel</p>
+    <div class="err" id="loginErr"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="u">Username</label>
+        <input type="text" id="u" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="p">Password</label>
+        <input type="password" id="p" autocomplete="current-password" required />
+      </div>
+      <button class="submit" type="submit" id="loginBtn">Masuk</button>
+    </form>
+  </div>
+</div>
+
+<div id="dash">
+  <div class="dash-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p id="dashDate">–</p>
+    </div>
+    <button class="logout" id="logoutBtn">Keluar</button>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="num" id="totalUsers">–</div><div class="label">Total user terdaftar</div></div>
+    <div class="stat-card"><div class="num" id="totalMsgs">–</div><div class="label">Pesan hari ini (semua user)</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Pemakaian hari ini</th><th>Daftar sejak</th><th>Login terakhir</th></tr>
+    </thead>
+    <tbody id="userRows"></tbody>
+  </table>
+</div>
+
+<script>
+  const loginScreen = document.getElementById('loginScreen');
+  const dash = document.getElementById('dash');
+  const loginForm = document.getElementById('loginForm');
+  const loginErr = document.getElementById('loginErr');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  async function loadStats(){
+    const res = await fetch('/api/admin-stats');
+    if (!res.ok) { showLogin(); return; }
+    const data = await res.json();
+    showDash(data);
+  }
+
+  function showLogin(){
+    loginScreen.style.display = 'flex';
+    dash.classList.remove('show');
+  }
+
+  function showDash(data){
+    loginScreen.style.display = 'none';
+    dash.classList.add('show');
+    document.getElementById('dashDate').textContent = 'data per ' + data.date;
+    document.getElementById('totalUsers').textContent = data.totalUsers;
+    document.getElementById('totalMsgs').textContent = data.totalMessagesToday;
+
+    const rows = document.getElementById('userRows');
+    if (data.users.length === 0) {
+      rows.innerHTML = '<tr><td colspan="4"><div class="empty">Belum ada user terdaftar.</div></td></tr>';
+      return;
+    }
+    rows.innerHTML = data.users.map(u => {
+      const full = u.usedToday >= 5;
+      return `<tr>
+        <td>${escapeHtml(u.email || '(tanpa email)')}</td>
+        <td><span class="badge ${full ? 'full' : 'ok'}">${u.usedToday}/5</span></td>
+        <td>${formatDate(u.createdAt)}</td>
+        <td>${formatDate(u.lastSignIn)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function escapeHtml(s){
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+  function formatDate(iso){
+    if (!iso) return '–';
+    const d = new Date(iso);
+    return d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginErr.classList.remove('show');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Tunggu...';
+
+    try {
+      const res = await fetch('/api/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('u').value.trim(),
+          password: document.getElementById('p').value,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        loginErr.textContent = data.error || 'Gagal masuk.';
+        loginErr.classList.add('show');
+        return;
+      }
+      await loadStats();
+    } catch {
+      loginErr.textContent = 'Koneksi gagal.';
+      loginErr.classList.add('show');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Masuk';
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/admin-logout', { method: 'POST' });
+    showLogin();
+  });
+
+  loadStats();
+</script>
+
+</body>
+</html>
