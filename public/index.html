@@ -1,1 +1,1011 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SlowHead AI — mikir pelan, jawab cepat</title>
+<meta name="description" content="SlowHead AI, chat AI oleh BeeThere. Jawaban singkat, langsung ke inti." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14170f; --bg-soft: #1b1f16; --surface: #232819; --surface-2: #2b3120;
+    --line: #363d28; --cream: #f1ecda; --cream-dim: #c7c2ab;
+    --moss: #8fa37e; --moss-dim: #5c6b4e; --amber: #d9a441; --amber-dim: #a97f34;
+    --danger: #c0685a; --radius: 18px; --sidebar-w: 264px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; height:100%; background: var(--bg); color: var(--cream); font-family: 'Inter', sans-serif; }
+  body::before{
+    content:""; position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(143,163,126,0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(217,164,65,0.07), transparent 55%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ---------- AUTH SCREEN ---------- */
+  #authScreen{ position:fixed; inset:0; z-index:50; background: var(--bg); overflow-y:auto; }
+  #authScreen.hidden{ display:none; }
+
+  .orb{ position:absolute; border-radius:50%; pointer-events:none; filter: blur(2px); z-index:0; }
+  .orb-top{
+    top:-14%; left:-10%; width:46vw; height:46vw; max-width:520px; max-height:520px;
+    background: radial-gradient(circle at 65% 35%, rgba(143,163,126,0.5), rgba(143,163,126,0.08) 60%, transparent 75%);
+  }
+  .orb-bottom{
+    bottom:-16%; right:-8%; width:40vw; height:40vw; max-width:460px; max-height:460px;
+    background: radial-gradient(circle at 35% 65%, rgba(217,164,65,0.4), rgba(217,164,65,0.06) 60%, transparent 75%);
+  }
+
+  .auth-shell{
+    position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    gap:70px; padding: 40px 24px 80px; max-width:1180px; margin:0 auto;
+  }
+
+  /* Perbaikan di auth-info agar logo & title muncul di mobile */
+  .auth-info{ flex:1; max-width:400px; display:flex; flex-direction:column; }
+  .mark-lg{
+    width:64px; height:64px; border-radius:50%; position:relative;
+    background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim));
+    box-shadow: 0 0 44px rgba(143,163,126,0.35);
+    animation: breathe 4.5s ease-in-out infinite; margin-bottom:20px;
+  }
+  .mark-lg::after{
+    content:""; position:absolute; top:24px; left:14px; width:14px; height:3.5px; border-radius:3px;
+    background: var(--bg); box-shadow: 21px 0 0 var(--bg); animation: blink 4.5s ease-in-out infinite;
+  }
+  .auth-info h1{ font-family:'Fraunces', serif; font-size:2.4rem; font-weight:600; margin:0; letter-spacing:0.01em; }
+  .auth-info > p.tagline{ margin:6px 0 22px; font-size:0.9rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
+
+  .feature-list{ list-style:none; margin:0; padding:22px 0 0; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:16px; }
+  .feature-list li{ display:flex; align-items:flex-start; gap:13px; }
+  .f-icon{
+    width:34px; height:34px; border-radius:10px; background: var(--surface); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; color: var(--moss);
+  }
+  .feature-list strong{ display:block; font-size:0.92rem; font-weight:600; color: var(--cream); }
+  .feature-list span{ font-size:0.8rem; color: var(--cream-dim); }
+
+  .auth-card-wrap{ width:100%; max-width:420px; }
+  .auth-card{ background: var(--bg-soft); border:1px solid var(--line); border-radius: 22px; padding: 34px 32px; box-shadow: 0 24px 70px rgba(0,0,0,0.4); }
+
+  .auth-card-head{ text-align:center; margin-bottom:22px; }
+  .auth-card-head h2{ font-family:'Fraunces', serif; font-size:1.5rem; font-weight:600; margin:0 0 6px; }
+  .auth-card-head p{ font-size:0.85rem; color: var(--cream-dim); margin:0; }
+
+  .auth-tabs{ display:flex; gap:6px; margin-bottom:20px; background: var(--surface); border-radius:12px; padding:4px; }
+  .auth-tab{ flex:1; text-align:center; padding:9px 0; border-radius:9px; cursor:pointer; font-size:0.85rem; color: var(--cream-dim); font-weight:600; }
+  .auth-tab.active{ background: var(--surface-2); color: var(--amber); }
+
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:0.8rem; font-weight:500; color: var(--cream); margin-bottom:6px; }
+  .field-input{ position:relative; }
+  .field-input svg.field-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color: var(--cream-dim); pointer-events:none; }
+  .field input{
+    width:100%; background: var(--surface); border:1px solid var(--line); color: var(--cream);
+    padding:11px 12px 11px 38px; border-radius:11px; font-size:0.9rem; font-family:'Inter', sans-serif; outline:none;
+  }
+  .field input:focus{ border-color: var(--moss); }
+  .field input::placeholder{ color: var(--cream-dim); opacity:0.7; }
+  .field-hint{ font-size:0.7rem; color: var(--cream-dim); margin-top:4px; }
+
+  .pw-toggle{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none;
+    color: var(--cream-dim); cursor:pointer; padding:4px; display:flex;
+  }
+  .pw-toggle:hover{ color: var(--cream); }
+
+  .field-row-between{ display:flex; align-items:center; justify-content:flex-end; margin:-6px 0 14px; }
+  .forgot-link{ font-size:0.78rem; color: var(--amber); cursor:pointer; background:none; border:none; font-family:'Inter', sans-serif; padding:0; }
+  .forgot-link:hover{ text-decoration:underline; }
+
+  .auth-submit{
+    width:100%; background: var(--amber); color: var(--bg); border:none; border-radius:12px;
+    padding:12px 0; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:4px;
+  }
+  .auth-submit:hover{ background:#e6b451; }
+  .auth-submit:disabled{ background: var(--surface-2); color: var(--cream-dim); cursor:not-allowed; }
+  .auth-submit.secondary{ background: var(--surface-2); color: var(--cream); border:1px solid var(--line); }
+  .auth-submit.secondary:hover{ border-color: var(--moss); }
+
+  .auth-divider{ display:flex; align-items:center; gap:10px; margin:18px 0; font-size:0.75rem; color: var(--cream-dim); }
+  .auth-divider::before, .auth-divider::after{ content:""; flex:1; height:1px; background: var(--line); }
+
+  .google-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:9px;
+    background: var(--cream); color:#1a1a1a; border:none; border-radius:12px; padding:11px 0;
+    font-weight:600; font-size:0.87rem; cursor:pointer; font-family:'Inter', sans-serif;
+  }
+  .google-btn:hover{ background:#fff; }
+  .google-btn svg{ flex-shrink:0; }
+
+  .auth-switch{ text-align:center; font-size:0.83rem; color: var(--cream-dim); margin-top:20px; }
+  .auth-switch button{ background:none; border:none; color: var(--amber); font-weight:600; cursor:pointer; font-size:0.83rem; font-family:'Inter', sans-serif; padding:0; }
+  .auth-switch button:hover{ text-decoration:underline; }
+
+  .auth-error{
+    background: rgba(192,104,90,0.12); border:1px solid var(--danger); color:#e3a89d;
+    font-size:0.8rem; padding:9px 12px; border-radius:10px; margin-bottom:14px; display:none;
+  }
+  .auth-error.show{ display:block; }
+  .auth-success{
+    background: rgba(143,163,126,0.12); border:1px solid var(--moss); color: var(--moss);
+    font-size:0.8rem; padding:9px 12px; border-radius:10px; margin-bottom:14px; display:none;
+  }
+  .auth-success.show{ display:block; }
+
+  .auth-note{ font-size:0.72rem; color: var(--cream-dim); text-align:center; margin-top:16px; font-family:'IBM Plex Mono', monospace; }
+  .auth-body-text{ font-size:0.87rem; color: var(--cream-dim); line-height:1.6; margin-bottom:18px; }
+  .auth-body-text strong{ color: var(--cream); }
+
+  /* Footer Screen Auth yang baru (Merapikan UI sesuai desain 2) */
+  .auth-page-footer {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 40px; font-size: 0.75rem; color: var(--cream-dim);
+    z-index: 10; font-family: 'Inter', sans-serif;
+  }
+  .auth-page-footer .footer-left, .auth-page-footer .footer-right {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .auth-page-footer a { color: var(--moss); text-decoration: none; }
+  .auth-page-footer a:hover { color: var(--amber); text-decoration: underline; }
+
+  @media (max-width: 979px) {
+    .auth-shell { flex-direction: column; gap: 32px; padding-top: 60px; }
+    .auth-info { align-items: center; text-align: center; max-width: 100%; }
+    .feature-list { display: none; }
+    .auth-page-footer {
+      position: relative; flex-direction: column; text-align: center; gap: 14px; padding: 20px;
+    }
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .layout{ position:relative; z-index:1; display:flex; height:100vh; overflow:hidden; }
+  .layout.hidden{ display:none; }
+  .sidebar{
+    width: var(--sidebar-w); flex-shrink:0; background: var(--bg-soft); border-right: 1px solid var(--line);
+    display:flex; flex-direction:column; padding: 18px 14px; transition: margin-left .2s ease;
+  }
+  .sidebar-brand{ display:flex; align-items:center; gap:10px; padding: 4px 6px 16px; }
+  .mark{
+    width:32px; height:32px; border-radius:50%; background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim));
+    position:relative; flex-shrink:0; animation: breathe 4.5s ease-in-out infinite;
+  }
+  .mark::after{
+    content:""; position:absolute; top:12px; left:7px; width:7px; height:2px; border-radius:2px;
+    background: var(--bg); box-shadow: 10.5px 0 0 var(--bg); animation: blink 4.5s ease-in-out infinite;
+  }
+  @keyframes breathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+  @keyframes blink{ 0%,92%,100%{ height:2px; top:12px; } 96%{ height:0.5px; top:13px; } }
+  .sidebar-brand h1{ font-family:'Fraunces', serif; font-size:1.05rem; font-weight:600; margin:0; }
+  .sidebar-brand p{ margin:1px 0 0; font-size:0.68rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
+
+  .quota-badge{
+    display:flex; align-items:center; justify-content:space-between; background: var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:9px 12px; margin-bottom:10px; font-size:0.78rem; color: var(--cream-dim);
+  }
+  .quota-badge strong{ color: var(--amber); font-family:'IBM Plex Mono', monospace; }
+
+  .model-picker{ margin-bottom:14px; }
+  .model-picker label{ display:block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color: var(--cream-dim); margin-bottom:5px; font-family:'IBM Plex Mono', monospace; }
+  .model-picker select{
+    width:100%; background: var(--surface); border:1px solid var(--line); color: var(--cream);
+    padding:8px 10px; border-radius:10px; font-size:0.83rem; font-family:'Inter', sans-serif; outline:none; cursor:pointer;
+  }
+  .model-picker select:focus{ border-color: var(--moss); }
+
+  .new-chat-btn{
+    display:flex; align-items:center; gap:8px; width:100%; background: var(--surface); border:1px solid var(--line);
+    color: var(--cream); padding:10px 12px; border-radius:12px; font-family:'Inter', sans-serif; font-size:0.85rem;
+    font-weight:500; cursor:pointer; transition: border-color .15s, background .15s; margin-bottom:14px;
+  }
+  .new-chat-btn:hover{ border-color: var(--amber); background: var(--surface-2); }
+
+  .history-label{ font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color: var(--cream-dim); font-family:'IBM Plex Mono', monospace; padding: 4px 8px 8px; }
+  #chatList{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:3px; }
+  .chat-item{
+    display:flex; align-items:center; justify-content:space-between; gap:6px; padding:9px 10px; border-radius:10px;
+    cursor:pointer; font-size:0.83rem; color: var(--cream-dim); border:1px solid transparent;
+  }
+  .chat-item:hover{ background: var(--surface); color: var(--cream); }
+  .chat-item.active{ background: var(--surface-2); border-color: var(--moss-dim); color: var(--cream); }
+  .chat-item span.title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+  .chat-item .del{ opacity:0; flex-shrink:0; color: var(--cream-dim); font-size:0.9rem; line-height:1; padding:2px 5px; border-radius:6px; }
+  .chat-item:hover .del{ opacity:0.7; }
+  .chat-item .del:hover{ opacity:1; color: var(--amber); background: var(--bg-soft); }
+  .empty-history{ color: var(--cream-dim); font-size:0.78rem; padding: 8px 10px; font-style:italic; }
+
+  .sidebar-footer{ border-top:1px solid var(--line); padding-top:12px; margin-top:10px; display:flex; align-items:center; justify-content:space-between; }
+  .user-email{ font-size:0.74rem; color: var(--cream-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
+  .logout-btn{ background:none; border:1px solid var(--line); color: var(--cream-dim); border-radius:8px; padding:5px 9px; font-size:0.72rem; cursor:pointer; }
+  .logout-btn:hover{ border-color: var(--danger); color: var(--danger); }
+
+  .content{ flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+  header{
+    display:flex; align-items:center; justify-content:space-between; padding: 18px 28px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(to bottom, var(--bg-soft), transparent); flex-shrink:0;
+  }
+  .header-left{ display:flex; align-items:center; gap:12px; }
+  #sidebarToggle{ display:none; background:none; border:1px solid var(--line); color:var(--cream); border-radius:8px; padding:6px 9px; cursor:pointer; }
+  header h2{ font-family:'Fraunces', serif; font-size:1.05rem; font-weight:600; margin:0; }
+  .by{ font-size:0.72rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; border:1px solid var(--line); padding:5px 10px; border-radius:999px; white-space:nowrap; }
+
+  main{ flex:1; display:flex; flex-direction:column; max-width:760px; width:100%; margin:0 auto; padding: 24px 20px 0; overflow:hidden; min-height:0; }
+  #log{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-bottom:20px; }
+  .empty-state{ margin:auto; text-align:center; color: var(--cream-dim); max-width:380px; }
+  .empty-state h2{ font-family:'Fraunces', serif; font-weight:600; font-size:1.6rem; color:var(--cream); margin-bottom:8px; }
+  .empty-state p{ font-size:0.92rem; line-height:1.5; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; }
+  .chip{ font-size:0.8rem; padding:7px 13px; border-radius:999px; border:1px solid var(--line); background: var(--surface); color: var(--cream-dim); cursor:pointer; transition: border-color .15s, color .15s; }
+  .chip:hover{ border-color: var(--moss); color: var(--cream); }
+
+  .row{ display:flex; gap:10px; align-items:flex-end; }
+  .row.user{ flex-direction:row-reverse; }
+  .avatar{ width:28px; height:28px; border-radius:50%; flex-shrink:0; background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim)); }
+  .row.user .avatar{ background: radial-gradient(circle at 35% 30%, var(--amber), var(--amber-dim)); }
+
+  .bubble{ max-width:78%; padding:12px 15px; border-radius: var(--radius); font-size:0.95rem; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+  .row.ai .bubble{ background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius:4px; }
+  .row.user .bubble{ background: var(--surface-2); border: 1px solid var(--amber-dim); border-bottom-right-radius:4px; color: var(--cream); }
+  .bubble.error{ border-color: var(--danger); color:#e3a89d; }
+
+  .thinking{ display:flex; gap:5px; padding:14px 4px; }
+  .thinking span{ width:6px; height:6px; border-radius:50%; background: var(--moss); animation: slowpulse 1.8s ease-in-out infinite; }
+  .thinking span:nth-child(2){ animation-delay:.3s; }
+  .thinking span:nth-child(3){ animation-delay:.6s; }
+  @keyframes slowpulse{ 0%,100%{ opacity:.25; transform:translateY(0); } 50%{ opacity:1; transform:translateY(-3px); } }
+
+  /* INI FIX BUG-NYA: Ubah selector form menjadi spesifik #chatForm */
+  #chatForm{ display:flex; gap:10px; padding: 16px 0 22px; border-top: 1px solid var(--line); margin-top:auto; flex-shrink:0; }
+  textarea{
+    flex:1; resize:none; background: var(--surface); border:1px solid var(--line); border-radius: 14px; color: var(--cream);
+    padding:12px 14px; font-family:'Inter', sans-serif; font-size:0.95rem; max-height:120px; outline:none;
+  }
+  textarea:focus{ border-color: var(--moss); }
+  textarea:disabled{ opacity:0.5; }
+  textarea::placeholder{ color: var(--cream-dim); }
+
+  button{
+    background: var(--amber); color: var(--bg); border:none; border-radius:14px; padding:0 20px; font-weight:600;
+    font-family:'Inter', sans-serif; font-size:0.9rem; cursor:pointer; transition: background .15s, transform .1s;
+  }
+  button:hover{ background:#e6b451; }
+  button:active{ transform:scale(0.97); }
+  button:disabled{ background: var(--surface-2); color: var(--cream-dim); cursor:not-allowed; }
+
+  footer{ text-align:center; font-size:0.72rem; color: var(--cream-dim); font-family:'IBM Plex Mono', monospace; padding-bottom:10px; flex-shrink:0; }
+
+  @media (prefers-reduced-motion: reduce){ .mark, .mark::after, .thinking span{ animation: none !important; } }
+  #log::-webkit-scrollbar, #chatList::-webkit-scrollbar{ width:6px; }
+  #log::-webkit-scrollbar-thumb, #chatList::-webkit-scrollbar-thumb{ background: var(--line); border-radius:3px; }
+
+  @media (max-width: 720px){
+    .sidebar{ position:fixed; top:0; bottom:0; left:0; z-index:10; margin-left: calc(-1 * var(--sidebar-w)); box-shadow: 20px 0 40px rgba(0,0,0,0.4); }
+    .sidebar.open{ margin-left:0; }
+    #sidebarToggle{ display:inline-flex; }
+    header{ padding: 16px 16px; }
+    main{ padding: 16px 14px 0; }
+    .bubble{ max-width:88%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREEN ============ -->
+<div id="authScreen">
+  <div class="orb orb-top" aria-hidden="true"></div>
+  <div class="orb orb-bottom" aria-hidden="true"></div>
+
+  <div class="auth-shell">
+    <aside class="auth-info">
+      <div class="mark-lg" aria-hidden="true"></div>
+      <h1>SlowHead AI</h1>
+      <p class="tagline">mikir pelan, jawab cepat</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <div><strong>Jawaban Inti</strong><span>Langsung ke poin penting</span></div>
+        </li>
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <div><strong>Aman & Privat</strong><span>Data kamu terlindungi</span></div>
+        </li>
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div><strong>Limit Harian</strong><span>5 pesan per hari per akun</span></div>
+        </li>
+      </ul>
+    </aside>
+
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <div id="authCardInner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-page-footer">
+    <div class="footer-left">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6c-1.9-1.9-5-1.9-6.9 0L12 6.5l-1.9-1.9c-1.9-1.9-5-1.9-6.9 0-1.9 1.9-1.9 5 0 6.9L12 20.3l8.8-8.8c1.9-1.9 1.9-5 0-6.9z"/></svg>
+      Dikembangkan oleh BeeThere
+    </div>
+    <div class="footer-right">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Dengan masuk, kamu setuju dengan <a href="#">Syarat &amp; Ketentuan</a> dan <a href="#">Kebijakan Privasi</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="layout hidden" id="appLayout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div><h1>SlowHead AI</h1><p>by BeeThere</p></div>
+    </div>
+
+    <div class="quota-badge"><span>Sisa hari ini</span><strong id="quotaText">–/5</strong></div>
+
+    <div class="model-picker">
+      <label for="modelSelect">Model AI</label>
+      <select id="modelSelect"></select>
+    </div>
+
+    <button class="new-chat-btn" id="newChatBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Chat baru
+    </button>
+
+    <div class="history-label">Riwayat</div>
+    <div id="chatList"></div>
+
+    <div class="sidebar-footer">
+      <span class="user-email" id="userEmail"></span>
+      <button class="logout-btn" id="logoutBtn">Keluar</button>
+    </div>
+  </aside>
+
+  <div class="content">
+    <header>
+      <div class="header-left">
+        <button id="sidebarToggle" aria-label="Buka riwayat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h2 id="chatTitle">Chat baru</h2>
+      </div>
+      <span class="by">mikir pelan, jawab cepat</span>
+    </header>
+
+    <main>
+      <div id="log"></div>
+      <form id="chatForm">
+        <textarea id="input" rows="1" placeholder="Ketik pertanyaan lo..."></textarea>
+        <button type="submit" id="sendBtn">Kirim</button>
+      </form>
+    </main>
+
+    <footer>SlowHead AI &middot; ditenagai Gemini &middot; dikembangkan oleh BeeThere</footer>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut, sendEmailVerification, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // ===== GANTI dengan Firebase config project lo sendiri =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyCqh6Axe57G8GkdrZHhinRqpEc6Qw7y2QI",
+    authDomain: "ms-slowhead-ai.firebaseapp.com",
+    projectId: "ms-slowhead-ai",
+    storageBucket: "ms-slowhead-ai.firebasestorage.app",
+    messagingSenderId: "568857481952",
+    appId: "1:568857481952:web:3912a886a12a0aef803685",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  const MODEL_OPTIONS = [
+    { id: 'gemini-3.1-flash-lite', label: 'Cepat & Hemat' },
+    { id: 'gemini-3.5-flash', label: 'Seimbang (default)' },
+    { id: 'gemini-3.1-pro', label: 'Paling Pintar' },
+    { id: 'openai/gpt-4o', label: 'ChatGPT (GPT-4o)' },
+  ];
+  const DEFAULT_MODEL = 'gemini-3.5-flash';
+
+  // ---------- DOM refs ----------
+  const authScreen = document.getElementById('authScreen');
+  const authCardInner = document.getElementById('authCardInner');
+  const appLayout = document.getElementById('appLayout');
+  const userEmailEl = document.getElementById('userEmail');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const quotaText = document.getElementById('quotaText');
+  const modelSelect = document.getElementById('modelSelect');
+
+  const log = document.getElementById('log');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const chatList = document.getElementById('chatList');
+  const chatTitle = document.getElementById('chatTitle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const newChatBtn = document.getElementById('newChatBtn');
+
+  let currentUser = null;
+  let remaining = null;
+  let limitTotal = 5;
+  let authFlowLock = false;
+
+  // ================= MODEL PICKER =================
+  MODEL_OPTIONS.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.id; opt.textContent = m.label;
+    modelSelect.appendChild(opt);
+  });
+  modelSelect.value = localStorage.getItem('slowhead_model') || DEFAULT_MODEL;
+  modelSelect.addEventListener('change', () => {
+    localStorage.setItem('slowhead_model', modelSelect.value);
+  });
+  function currentModel(){ return modelSelect.value || DEFAULT_MODEL; }
+
+  // ================= AUTH ERROR MAP =================
+  function mapAuthError(code) {
+    const map = {
+      'auth/invalid-email': 'Format email salah.',
+      'auth/user-not-found': 'Akun gak ditemukan. Coba daftar dulu.',
+      'auth/wrong-password': 'Password salah.',
+      'auth/invalid-credential': 'Email/username atau password salah.',
+      'auth/email-already-in-use': 'Email ini udah dipakai. Coba masuk aja.',
+      'auth/weak-password': 'Password minimal 6 karakter.',
+      'auth/popup-closed-by-user': 'Popup Google ditutup sebelum selesai.',
+      'auth/cancelled-popup-request': 'Popup Google dibatalkan.',
+    };
+    return map[code] || 'Terjadi kesalahan, coba lagi.';
+  }
+
+  function googleIconSvg(){
+    return `<svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4c-7.5 0-14 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.8 14-5.1l-6.5-5.5c-2 1.4-4.6 2.3-7.5 2.3-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.9 39.8 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C40.8 36.6 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>`;
+  }
+  function personIconSvg(){
+    return `<svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  }
+  function lockIconSvg(){
+    return `<svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+  }
+  function eyeIconSvg(open){
+    if (open) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+    }
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  // ================= RENDER: LOGIN / SIGNUP =================
+  function renderLoginSignup(mode = 'login') {
+    const head = mode === 'login'
+      ? { title: 'Selamat datang!', sub: 'Masuk untuk melanjutkan ke SlowHead AI' }
+      : { title: 'Buat akun baru', sub: 'Daftar buat mulai chat sama SlowHead AI' };
+
+    authCardInner.innerHTML = `
+      <div class="auth-card-head">
+        <h2>${head.title}</h2>
+        <p>${head.sub}</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab ${mode==='login'?'active':''}" data-mode="login">Masuk</div>
+        <div class="auth-tab ${mode==='signup'?'active':''}" data-mode="signup">Daftar</div>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
+      <form id="authForm">
+        <div class="field" id="usernameField" style="display:${mode==='signup'?'block':'none'}">
+          <label for="authUsername">Username</label>
+          <div class="field-input">
+            ${personIconSvg()}
+            <input type="text" id="authUsername" autocomplete="username" placeholder="Pilih username" ${mode==='signup'?'required':''} />
+          </div>
+          <div class="field-hint">3-20 karakter, huruf kecil/angka/underscore</div>
+        </div>
+        <div class="field">
+          <label id="identifierLabel" for="authIdentifier">${mode==='login' ? 'Email atau Username' : 'Email'}</label>
+          <div class="field-input">
+            ${personIconSvg()}
+            <input type="text" id="authIdentifier" required autocomplete="${mode==='login'?'username':'email'}" placeholder="${mode==='login' ? 'Masukkan email atau username' : 'Masukkan email'}" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="authPassword">Password</label>
+          <div class="field-input">
+            ${lockIconSvg()}
+            <input type="password" id="authPassword" required autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="6" placeholder="Masukkan password" />
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Tampilkan password">${eyeIconSvg(false)}</button>
+          </div>
+        </div>
+        ${mode === 'login' ? '<div class="field-row-between"><button type="button" class="forgot-link" id="forgotBtn">Lupa password?</button></div>' : ''}
+        <button type="submit" class="auth-submit" id="authSubmit">${mode==='login'?'Masuk':'Daftar'}</button>
+      </form>
+      <div class="auth-divider">atau</div>
+      <button type="button" class="google-btn" id="googleBtn">${googleIconSvg()} Lanjut dengan Google</button>
+      <p class="auth-switch">
+        ${mode==='login' ? 'Belum punya akun? <button type="button" id="switchModeBtn">Daftar sekarang</button>' : 'Udah punya akun? <button type="button" id="switchModeBtn">Masuk di sini</button>'}
+      </p>
+      <p class="auth-note">Limit 5 pesan/hari per akun</p>
+    `;
+
+    const authError = document.getElementById('authError');
+    const authSuccess = document.getElementById('authSuccess');
+    const authForm = document.getElementById('authForm');
+    const authSubmit = document.getElementById('authSubmit');
+    const googleBtn = document.getElementById('googleBtn');
+    const pwToggle = document.getElementById('pwToggle');
+    const pwInput = document.getElementById('authPassword');
+    const switchModeBtn = document.getElementById('switchModeBtn');
+
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => renderLoginSignup(tab.dataset.mode));
+    });
+    if (switchModeBtn) {
+      switchModeBtn.addEventListener('click', () => renderLoginSignup(mode === 'login' ? 'signup' : 'login'));
+    }
+
+    pwToggle.addEventListener('click', () => {
+      const show = pwInput.type === 'password';
+      pwInput.type = show ? 'text' : 'password';
+      pwToggle.innerHTML = eyeIconSvg(show);
+      pwToggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+    });
+
+    const forgotBtn = document.getElementById('forgotBtn');
+    if (forgotBtn) {
+      forgotBtn.addEventListener('click', async () => {
+        authError.classList.remove('show');
+        authSuccess.classList.remove('show');
+        const identifier = document.getElementById('authIdentifier').value.trim();
+        let email = identifier;
+        if (!email.includes('@')) {
+          authError.textContent = 'Isi kolom email/username dulu di atas ya (pakai email kalau mau reset password).';
+          authError.classList.add('show');
+          return;
+        }
+        forgotBtn.disabled = true;
+        try {
+          await sendPasswordResetEmail(auth, email);
+          authSuccess.textContent = 'Link reset password udah dikirim ke ' + email + '.';
+          authSuccess.classList.add('show');
+        } catch (err) {
+          authError.textContent = mapAuthError(err.code);
+          authError.classList.add('show');
+        } finally {
+          forgotBtn.disabled = false;
+        }
+      });
+    }
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      authError.classList.remove('show');
+      authSuccess.classList.remove('show');
+      authSubmit.disabled = true;
+      authSubmit.textContent = 'Tunggu...';
+      authFlowLock = true;
+
+      const identifier = document.getElementById('authIdentifier').value.trim();
+      const password = document.getElementById('authPassword').value;
+
+      try {
+        if (mode === 'login') {
+          let email = identifier;
+          if (!identifier.includes('@')) {
+            const r = await fetch('/api/resolve-username', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: identifier.toLowerCase() })
+            });
+            const rd = await r.json();
+            if (!r.ok) throw { code: 'custom', message: rd.error || 'Username gak ditemukan.' };
+            email = rd.email;
+          }
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          currentUser = cred.user;
+          await routeUser(cred.user);
+        } else {
+          const username = document.getElementById('authUsername').value.trim().toLowerCase();
+          if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+            throw { code: 'custom', message: 'Username 3-20 karakter, huruf kecil/angka/underscore.' };
+          }
+          const avRes = await fetch('/api/check-username', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+          });
+          const avData = await avRes.json();
+          if (!avData.available) throw { code: 'custom', message: avData.error || 'Username udah dipakai.' };
+
+          const cred = await createUserWithEmailAndPassword(auth, identifier, password);
+          await sendEmailVerification(cred.user);
+
+          const token = await cred.user.getIdToken();
+          const claimRes = await fetch('/api/claim-username', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ username })
+          });
+          const claimData = await claimRes.json();
+          if (!claimData.ok) {
+            await cred.user.delete().catch(() => {});
+            throw { code: 'custom', message: claimData.error || 'Gagal daftar, coba lagi.' };
+          }
+          currentUser = cred.user;
+          await routeUser(cred.user);
+        }
+      } catch (err) {
+        authError.textContent = err.code === 'custom' ? err.message : mapAuthError(err.code);
+        authError.classList.add('show');
+      } finally {
+        authFlowLock = false;
+        authSubmit.disabled = false;
+        authSubmit.textContent = mode === 'login' ? 'Masuk' : 'Daftar';
+      }
+    });
+
+    googleBtn.addEventListener('click', async () => {
+      authError.classList.remove('show');
+      authFlowLock = true;
+      try {
+        const cred = await signInWithPopup(auth, googleProvider);
+        currentUser = cred.user;
+        await routeUser(cred.user);
+      } catch (err) {
+        authError.textContent = mapAuthError(err.code);
+        authError.classList.add('show');
+      } finally {
+        authFlowLock = false;
+      }
+    });
+  }
+
+  // ================= RENDER: VERIFY EMAIL =================
+  function renderVerifyEmail(user) {
+    authCardInner.innerHTML = `
+      <p class="auth-body-text">Link verifikasi udah dikirim ke <strong>${user.email}</strong>. Klik link-nya, terus balik ke sini.</p>
+      <div class="auth-error" id="verifyError"></div>
+      <button class="auth-submit" id="checkVerifiedBtn">Saya sudah verifikasi</button>
+      <button class="auth-submit secondary" id="resendBtn" style="margin-top:8px;">Kirim ulang email</button>
+      <button class="auth-submit secondary" id="verifyLogoutBtn" style="margin-top:8px;">Keluar</button>
+    `;
+    const verifyError = document.getElementById('verifyError');
+
+    document.getElementById('checkVerifiedBtn').addEventListener('click', async () => {
+      try {
+        await user.reload();
+        await routeUser(auth.currentUser);
+      } catch {
+        verifyError.textContent = 'Gagal cek status, coba lagi.';
+        verifyError.classList.add('show');
+      }
+    });
+    document.getElementById('resendBtn').addEventListener('click', async (e) => {
+      e.target.disabled = true; e.target.textContent = 'Mengirim...';
+      try {
+        await sendEmailVerification(user);
+        e.target.textContent = 'Terkirim!';
+      } catch {
+        verifyError.textContent = 'Gagal kirim ulang, coba lagi nanti.';
+        verifyError.classList.add('show');
+        e.target.disabled = false; e.target.textContent = 'Kirim ulang email';
+      }
+    });
+    document.getElementById('verifyLogoutBtn').addEventListener('click', () => signOut(auth));
+  }
+
+  // ================= RENDER: SET USERNAME (buat akun Google baru) =================
+  function renderUsernamePrompt(user) {
+    authCardInner.innerHTML = `
+      <p class="auth-body-text">Hampir selesai. Pilih username buat akun <strong>${user.email}</strong>.</p>
+      <div class="auth-error" id="unError"></div>
+      <div class="field">
+        <label for="unInput">Username</label>
+        <input type="text" id="unInput" autocomplete="username" />
+        <div class="field-hint">3-20 karakter, huruf kecil/angka/underscore</div>
+      </div>
+      <button class="auth-submit" id="unSubmit">Lanjut</button>
+      <button class="auth-submit secondary" id="unLogoutBtn" style="margin-top:8px;">Keluar</button>
+    `;
+    const unError = document.getElementById('unError');
+    const unSubmit = document.getElementById('unSubmit');
+
+    unSubmit.addEventListener('click', async () => {
+      unError.classList.remove('show');
+      const username = document.getElementById('unInput').value.trim().toLowerCase();
+      if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+        unError.textContent = 'Username 3-20 karakter, huruf kecil/angka/underscore.';
+        unError.classList.add('show');
+        return;
+      }
+      unSubmit.disabled = true; unSubmit.textContent = 'Tunggu...';
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/claim-username', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ username })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          unError.textContent = data.error || 'Gagal, coba username lain.';
+          unError.classList.add('show');
+          return;
+        }
+        await routeUser(user);
+      } catch {
+        unError.textContent = 'Terjadi kesalahan, coba lagi.';
+        unError.classList.add('show');
+      } finally {
+        unSubmit.disabled = false; unSubmit.textContent = 'Lanjut';
+      }
+    });
+    document.getElementById('unLogoutBtn').addEventListener('click', () => signOut(auth));
+  }
+
+  // ================= ROUTING =================
+  async function getUserProfile(uid) {
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      return snap.exists() ? snap.data() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function routeUser(user) {
+    if (!user) {
+      authScreen.classList.remove('hidden');
+      appLayout.classList.add('hidden');
+      renderLoginSignup('login');
+      return;
+    }
+
+    const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
+    if (!isGoogleUser && !user.emailVerified) {
+      authScreen.classList.remove('hidden');
+      appLayout.classList.add('hidden');
+      renderVerifyEmail(user);
+      return;
+    }
+
+    const profile = await getUserProfile(user.uid);
+    if (!profile || !profile.username) {
+      authScreen.classList.remove('hidden');
+      appLayout.classList.add('hidden');
+      renderUsernamePrompt(user);
+      return;
+    }
+
+    authScreen.classList.add('hidden');
+    appLayout.classList.remove('hidden');
+    userEmailEl.textContent = profile.username;
+    input.disabled = false;
+    initChatsForUser(user.uid);
+    await refreshQuota();
+  }
+
+  logoutBtn.addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (authFlowLock) return;
+    await routeUser(user);
+  });
+
+  async function getToken() {
+    if (!currentUser) return null;
+    return currentUser.getIdToken();
+  }
+
+  async function refreshQuota() {
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/usage', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      if (res.ok) { remaining = data.remaining; limitTotal = data.limit; renderQuota(); }
+    } catch {}
+  }
+  function renderQuota() {
+    quotaText.textContent = (remaining ?? '–') + '/' + limitTotal;
+    const empty = remaining === 0;
+    input.disabled = empty; sendBtn.disabled = empty;
+    input.placeholder = empty ? 'Limit harian abis, besok lagi ya' : 'Ketik pertanyaan lo...';
+  }
+
+  // ================= CHAT HISTORY (Firestore, sync antar device) =================
+  let chats = {}, activeId = null, isSending = false, unsubscribeChats = null, currentUid = null;
+
+  function chatsCollection(uid) { return collection(db, 'users', uid, 'chats'); }
+
+  function initChatsForUser(uid) {
+    currentUid = uid;
+    if (unsubscribeChats) unsubscribeChats();
+    const q = query(chatsCollection(uid), orderBy('updatedAt', 'desc'));
+    unsubscribeChats = onSnapshot(q, (snapshot) => {
+      chats = {};
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        chats[docSnap.id] = { id: docSnap.id, title: d.title || 'Chat baru', messages: d.messages || [] };
+      });
+      if (!activeId || !chats[activeId]) {
+        const first = Object.keys(chats)[0];
+        if (first) activeId = first;
+        else { if (!isSending) createChat(); return; }
+      }
+      renderSidebar();
+      if (!isSending) renderActiveChat();
+    }, (err) => console.error('Gagal sinkron riwayat chat:', err));
+  }
+
+  async function createChat(){
+    const ref = await addDoc(chatsCollection(currentUid), {
+      title: 'Chat baru', messages: [], createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+    });
+    activeId = ref.id; input.focus();
+  }
+  async function deleteChat(id, e){
+    e.stopPropagation();
+    const wasActive = activeId === id;
+    await deleteDoc(doc(db, 'users', currentUid, 'chats', id));
+    if (wasActive) activeId = null;
+  }
+  function switchChat(id){
+    activeId = id; renderSidebar(); renderActiveChat();
+    if (window.innerWidth <= 720) sidebar.classList.remove('open');
+  }
+  async function persistChat(chatId, messages, newTitle){
+    if (!currentUid || !chatId) return;
+    const payload = { messages, updatedAt: serverTimestamp() };
+    if (newTitle) payload.title = newTitle;
+    try {
+      await updateDoc(doc(db, 'users', currentUid, 'chats', chatId), payload);
+    } catch (err) {
+      console.warn('Gagal simpan chat (mungkin udah dihapus):', err.message);
+    }
+  }
+
+  function renderSidebar(){
+    const items = Object.values(chats);
+    if (items.length === 0) { chatList.innerHTML = '<div class="empty-history">Belum ada riwayat.</div>'; return; }
+    chatList.innerHTML = '';
+    items.forEach(chat => {
+      const el = document.createElement('div');
+      el.className = 'chat-item' + (chat.id === activeId ? ' active' : '');
+      el.innerHTML = '<span class="title"></span><span class="del" title="Hapus">&times;</span>';
+      el.querySelector('.title').textContent = chat.title;
+      el.addEventListener('click', () => switchChat(chat.id));
+      el.querySelector('.del').addEventListener('click', (e) => deleteChat(chat.id, e));
+      chatList.appendChild(el);
+    });
+  }
+
+  function renderActiveChat(){
+    const chat = chats[activeId];
+    log.innerHTML = '';
+    if (!chat) return;
+    chatTitle.textContent = chat.title;
+
+    if (chat.messages.length === 0) {
+      log.innerHTML = `
+        <div class="empty-state" id="emptyState">
+          <h2>Langsung aja.</h2>
+          <p>SlowHead gak suka basa-basi. Tanya apa aja, dijawab inti-nya doang.</p>
+          <div class="chips">
+            <span class="chip" data-q="Apa itu recursion?">Apa itu recursion?</span>
+            <span class="chip" data-q="Kenapa langit biru?">Kenapa langit biru?</span>
+            <span class="chip" data-q="Tips deploy Vercel biar gak error">Tips deploy Vercel</span>
+          </div>
+        </div>`;
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => { input.value = chip.dataset.q; autoGrow(); form.requestSubmit(); });
+      });
+      return;
+    }
+    chat.messages.forEach(m => addBubble(m.role === 'model' ? 'ai' : 'user', m.text, false));
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function autoGrow(){ input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; }
+  input.addEventListener('input', autoGrow);
+
+  function addBubble(role, text, scroll = true, isError = false){
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) emptyState.remove();
+    const row = document.createElement('div');
+    row.className = 'row ' + (role === 'user' ? 'user' : 'ai');
+    row.innerHTML = '<div class="avatar" aria-hidden="true"></div><div class="bubble' + (isError ? ' error' : '') + '"></div>';
+    row.querySelector('.bubble').textContent = text;
+    log.appendChild(row);
+    if (scroll) log.scrollTop = log.scrollHeight;
+    return row;
+  }
+  function addThinking(){
+    const row = document.createElement('div');
+    row.className = 'row ai'; row.id = 'thinkingRow';
+    row.innerHTML = '<div class="avatar" aria-hidden="true"></div><div class="bubble thinking"><span></span><span></span><span></span></div>';
+    log.appendChild(row); log.scrollTop = log.scrollHeight;
+  }
+  function removeThinking(){ const row = document.getElementById('thinkingRow'); if (row) row.remove(); }
+
+  newChatBtn.addEventListener('click', createChat);
+  sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isSending) return;
+
+    const text = input.value.trim();
+    if (!text || remaining === 0) return;
+    const chat = chats[activeId];
+    if (!chat) return;
+
+    const currentChatId = chat.id;
+
+    isSending = true;
+    addBubble('user', text);
+    chat.messages.push({ role: 'user', text });
+    const isFirstMessage = chat.messages.length === 1;
+    if (isFirstMessage) {
+      chat.title = text.slice(0, 34) + (text.length > 34 ? '…' : '');
+      if (activeId === currentChatId) chatTitle.textContent = chat.title;
+    }
+
+    input.value = ''; autoGrow(); sendBtn.disabled = true; addThinking();
+
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ messages: chat.messages, model: currentModel() })
+      });
+      const data = await res.json();
+      removeThinking();
+
+      if (!res.ok) {
+        if (activeId === currentChatId) addBubble('ai', data.error || 'Gagal dapat jawaban.', true, true);
+        if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
+        await persistChat(currentChatId, chat.messages, isFirstMessage ? chat.title : undefined);
+        return;
+      }
+
+      if (activeId === currentChatId) addBubble('ai', data.reply);
+      chat.messages.push({ role: 'model', text: data.reply });
+      await persistChat(currentChatId, chat.messages, isFirstMessage ? chat.title : undefined);
+      if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
+    } catch (err) {
+      removeThinking();
+      if (activeId === currentChatId) addBubble('ai', 'Koneksi gagal. Coba lagi.', true, true);
+    } finally {
+      isSending = false;
+      sendBtn.disabled = (remaining === 0);
+      if (activeId === currentChatId) input.focus();
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  renderLoginSignup('login');
+</script>
+
+</body>
+</html>
 
