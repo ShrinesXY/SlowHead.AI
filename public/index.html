@@ -26,77 +26,133 @@
   }
 
   /* ---------- AUTH SCREEN ---------- */
-  #authScreen{ position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; background: var(--bg); padding: 20px; overflow-y:auto; }
+  #authScreen{ position:fixed; inset:0; z-index:50; background: var(--bg); overflow-y:auto; }
   #authScreen.hidden{ display:none; }
 
-  .glow-orb{
-    position:absolute; top:16%; left:50%; transform:translateX(-50%);
-    width:380px; height:380px; border-radius:50%; pointer-events:none; z-index:0;
-    background: radial-gradient(circle, rgba(143,163,126,0.26), rgba(217,164,65,0.06) 55%, transparent 72%);
-    filter: blur(30px);
-    animation: breathe 4.5s ease-in-out infinite;
+  .orb{ position:absolute; border-radius:50%; pointer-events:none; filter: blur(2px); z-index:0; }
+  .orb-top{
+    top:-14%; left:-10%; width:46vw; height:46vw; max-width:520px; max-height:520px;
+    background: radial-gradient(circle at 65% 35%, rgba(143,163,126,0.5), rgba(143,163,126,0.08) 60%, transparent 75%);
+  }
+  .orb-bottom{
+    bottom:-16%; right:-8%; width:40vw; height:40vw; max-width:460px; max-height:460px;
+    background: radial-gradient(circle at 35% 65%, rgba(217,164,65,0.4), rgba(217,164,65,0.06) 60%, transparent 75%);
   }
 
-  .auth-wrap{ width:100%; max-width:380px; margin:auto; position:relative; z-index:1; }
+  .auth-shell{
+    position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    gap:70px; padding: 40px 24px; max-width:1180px; margin:0 auto;
+  }
 
-  .auth-hero{ text-align:center; margin-bottom:26px; }
+  .auth-info{ flex:1; max-width:400px; display:none; }
   .mark-lg{
-    width:60px; height:60px; margin:0 auto 16px; border-radius:50%; position:relative;
+    width:64px; height:64px; border-radius:50%; position:relative;
     background: radial-gradient(circle at 35% 30%, var(--moss), var(--moss-dim));
-    box-shadow: 0 0 40px rgba(143,163,126,0.35);
-    animation: breathe 4.5s ease-in-out infinite;
+    box-shadow: 0 0 44px rgba(143,163,126,0.35);
+    animation: breathe 4.5s ease-in-out infinite; margin-bottom:20px;
   }
   .mark-lg::after{
-    content:""; position:absolute; top:22px; left:13px; width:13px; height:3.5px; border-radius:3px;
-    background: var(--bg); box-shadow: 19.5px 0 0 var(--bg); animation: blink 4.5s ease-in-out infinite;
+    content:""; position:absolute; top:24px; left:14px; width:14px; height:3.5px; border-radius:3px;
+    background: var(--bg); box-shadow: 21px 0 0 var(--bg); animation: blink 4.5s ease-in-out infinite;
   }
-  .auth-hero h1{ font-family:'Fraunces', serif; font-size:2rem; font-weight:600; margin:0; letter-spacing:0.01em; }
-  .auth-hero p{ margin:6px 0 0; font-size:0.82rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
+  .auth-info h1{ font-family:'Fraunces', serif; font-size:2.4rem; font-weight:600; margin:0; letter-spacing:0.01em; }
+  .auth-info > p.tagline{ margin:6px 0 22px; font-size:0.9rem; color: var(--moss); font-family:'IBM Plex Mono', monospace; }
 
-  .auth-card{ background: var(--bg-soft); border:1px solid var(--line); border-radius: 20px; padding: 28px 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+  .feature-list{ list-style:none; margin:0 0 30px; padding:22px 0 0; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:16px; }
+  .feature-list li{ display:flex; align-items:flex-start; gap:13px; }
+  .f-icon{
+    width:34px; height:34px; border-radius:10px; background: var(--surface); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; color: var(--moss);
+  }
+  .feature-list strong{ display:block; font-size:0.92rem; font-weight:600; color: var(--cream); }
+  .feature-list span{ font-size:0.8rem; color: var(--cream-dim); }
 
-  .auth-tabs{ display:flex; gap:6px; margin-bottom:18px; background: var(--surface); border-radius:12px; padding:4px; }
-  .auth-tab{ flex:1; text-align:center; padding:8px 0; border-radius:9px; cursor:pointer; font-size:0.85rem; color: var(--cream-dim); font-weight:500; }
-  .auth-tab.active{ background: var(--surface-2); color: var(--cream); }
+  .auth-info-footer{
+    display:flex; align-items:center; gap:7px; font-size:0.78rem; color: var(--cream-dim); font-family:'IBM Plex Mono', monospace;
+  }
 
-  .field{ margin-bottom:12px; }
-  .field label{ display:block; font-size:0.78rem; color: var(--cream-dim); margin-bottom:5px; }
+  .auth-card-wrap{ width:100%; max-width:420px; }
+  .auth-card{ background: var(--bg-soft); border:1px solid var(--line); border-radius: 22px; padding: 34px 32px; box-shadow: 0 24px 70px rgba(0,0,0,0.4); }
+
+  .auth-card-head{ text-align:center; margin-bottom:22px; }
+  .auth-card-head h2{ font-family:'Fraunces', serif; font-size:1.5rem; font-weight:600; margin:0 0 6px; }
+  .auth-card-head p{ font-size:0.85rem; color: var(--cream-dim); margin:0; }
+
+  .auth-tabs{ display:flex; gap:6px; margin-bottom:20px; background: var(--surface); border-radius:12px; padding:4px; }
+  .auth-tab{ flex:1; text-align:center; padding:9px 0; border-radius:9px; cursor:pointer; font-size:0.85rem; color: var(--cream-dim); font-weight:600; }
+  .auth-tab.active{ background: var(--surface-2); color: var(--amber); }
+
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:0.8rem; font-weight:500; color: var(--cream); margin-bottom:6px; }
+  .field-input{ position:relative; }
+  .field-input svg.field-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color: var(--cream-dim); pointer-events:none; }
   .field input{
     width:100%; background: var(--surface); border:1px solid var(--line); color: var(--cream);
-    padding:10px 12px; border-radius:10px; font-size:0.9rem; font-family:'Inter', sans-serif; outline:none;
+    padding:11px 12px 11px 38px; border-radius:11px; font-size:0.9rem; font-family:'Inter', sans-serif; outline:none;
   }
   .field input:focus{ border-color: var(--moss); }
+  .field input::placeholder{ color: var(--cream-dim); opacity:0.7; }
   .field-hint{ font-size:0.7rem; color: var(--cream-dim); margin-top:4px; }
+
+  .pw-toggle{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none;
+    color: var(--cream-dim); cursor:pointer; padding:4px; display:flex;
+  }
+  .pw-toggle:hover{ color: var(--cream); }
+
+  .field-row-between{ display:flex; align-items:center; justify-content:flex-end; margin:-6px 0 14px; }
+  .forgot-link{ font-size:0.78rem; color: var(--amber); cursor:pointer; background:none; border:none; font-family:'Inter', sans-serif; padding:0; }
+  .forgot-link:hover{ text-decoration:underline; }
 
   .auth-submit{
     width:100%; background: var(--amber); color: var(--bg); border:none; border-radius:12px;
-    padding:11px 0; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:4px;
+    padding:12px 0; font-weight:600; font-size:0.92rem; cursor:pointer; margin-top:4px;
   }
   .auth-submit:hover{ background:#e6b451; }
   .auth-submit:disabled{ background: var(--surface-2); color: var(--cream-dim); cursor:not-allowed; }
   .auth-submit.secondary{ background: var(--surface-2); color: var(--cream); border:1px solid var(--line); }
   .auth-submit.secondary:hover{ border-color: var(--moss); }
 
-  .auth-divider{ display:flex; align-items:center; gap:10px; margin:16px 0; font-size:0.75rem; color: var(--cream-dim); }
+  .auth-divider{ display:flex; align-items:center; gap:10px; margin:18px 0; font-size:0.75rem; color: var(--cream-dim); }
   .auth-divider::before, .auth-divider::after{ content:""; flex:1; height:1px; background: var(--line); }
 
   .google-btn{
     width:100%; display:flex; align-items:center; justify-content:center; gap:9px;
-    background: var(--cream); color:#1a1a1a; border:none; border-radius:12px; padding:10px 0;
+    background: var(--cream); color:#1a1a1a; border:none; border-radius:12px; padding:11px 0;
     font-weight:600; font-size:0.87rem; cursor:pointer; font-family:'Inter', sans-serif;
   }
   .google-btn:hover{ background:#fff; }
   .google-btn svg{ flex-shrink:0; }
 
+  .auth-switch{ text-align:center; font-size:0.83rem; color: var(--cream-dim); margin-top:20px; }
+  .auth-switch button{ background:none; border:none; color: var(--amber); font-weight:600; cursor:pointer; font-size:0.83rem; font-family:'Inter', sans-serif; padding:0; }
+  .auth-switch button:hover{ text-decoration:underline; }
+
   .auth-error{
     background: rgba(192,104,90,0.12); border:1px solid var(--danger); color:#e3a89d;
-    font-size:0.8rem; padding:8px 11px; border-radius:9px; margin-bottom:12px; display:none;
+    font-size:0.8rem; padding:9px 12px; border-radius:10px; margin-bottom:14px; display:none;
   }
   .auth-error.show{ display:block; }
+  .auth-success{
+    background: rgba(143,163,126,0.12); border:1px solid var(--moss); color: var(--moss);
+    font-size:0.8rem; padding:9px 12px; border-radius:10px; margin-bottom:14px; display:none;
+  }
+  .auth-success.show{ display:block; }
 
   .auth-note{ font-size:0.72rem; color: var(--cream-dim); text-align:center; margin-top:16px; font-family:'IBM Plex Mono', monospace; }
   .auth-body-text{ font-size:0.87rem; color: var(--cream-dim); line-height:1.6; margin-bottom:18px; }
   .auth-body-text strong{ color: var(--cream); }
+
+  .auth-legal{
+    position:relative; z-index:1; text-align:center; font-size:0.75rem; color: var(--cream-dim);
+    padding: 0 20px 28px;
+  }
+  .auth-legal a{ color: var(--moss); text-decoration:none; }
+  .auth-legal a:hover{ text-decoration:underline; }
+
+  @media (min-width: 980px){
+    .auth-info{ display:block; }
+  }
 
   /* ---------- LAYOUT ---------- */
   .layout{ position:relative; z-index:1; display:flex; height:100vh; overflow:hidden; }
@@ -231,17 +287,44 @@
 
 <!-- ============ AUTH SCREEN (dynamic content di #authCardInner) ============ -->
 <div id="authScreen">
-  <div class="glow-orb" aria-hidden="true"></div>
-  <div class="auth-wrap">
-    <div class="auth-hero">
+  <div class="orb orb-top" aria-hidden="true"></div>
+  <div class="orb orb-bottom" aria-hidden="true"></div>
+
+  <div class="auth-shell">
+    <aside class="auth-info">
       <div class="mark-lg" aria-hidden="true"></div>
       <h1>SlowHead AI</h1>
-      <p>mikir pelan, jawab cepat</p>
-    </div>
-    <div class="auth-card">
-      <div id="authCardInner"></div>
+      <p class="tagline">mikir pelan, jawab cepat</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <div><strong>Jawaban Inti</strong><span>Langsung ke poin penting</span></div>
+        </li>
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <div><strong>Aman & Privat</strong><span>Data kamu terlindungi</span></div>
+        </li>
+        <li>
+          <span class="f-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div><strong>Limit Harian</strong><span>5 pesan per hari per akun</span></div>
+        </li>
+      </ul>
+
+      <div class="auth-info-footer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6c-1.9-1.9-5-1.9-6.9 0L12 6.5l-1.9-1.9c-1.9-1.9-5-1.9-6.9 0-1.9 1.9-1.9 5 0 6.9L12 20.3l8.8-8.8c1.9-1.9 1.9-5 0-6.9z"/></svg>
+        Dikembangkan oleh BeeThere
+      </div>
+    </aside>
+
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <div id="authCardInner"></div>
+      </div>
     </div>
   </div>
+
+  <p class="auth-legal">Dengan masuk, kamu setuju dengan Syarat &amp; Ketentuan dan Kebijakan Privasi</p>
 </div>
 
 <!-- ============ MAIN APP ============ -->
@@ -300,7 +383,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-    signOut, sendEmailVerification, GoogleAuthProvider, signInWithPopup,
+    signOut, sendEmailVerification, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail,
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
     getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc,
@@ -308,12 +391,12 @@
 
   // ===== GANTI dengan Firebase config project lo sendiri =====
   const firebaseConfig = {
-    apiKey: "GANTI_DENGAN_API_KEY_FIREBASE",
-    authDomain: "GANTI.firebaseapp.com",
-    projectId: "GANTI",
-    storageBucket: "GANTI.appspot.com",
-    messagingSenderId: "GANTI",
-    appId: "GANTI",
+    apiKey: "AIzaSyCqh6Axe57G8GkdrZHhinRqpEc6Qw7y2QI",
+    authDomain: "ms-slowhead-ai.firebaseapp.com",
+    projectId: "ms-slowhead-ai",
+    storageBucket: "ms-slowhead-ai.firebasestorage.app",
+    messagingSenderId: "568857481952",
+    appId: "1:568857481952:web:3912a886a12a0aef803685",
   };
 
   const app = initializeApp(firebaseConfig);
@@ -383,48 +466,125 @@
   function googleIconSvg(){
     return `<svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6 29.5 4 24 4c-7.5 0-14 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.8 14-5.1l-6.5-5.5c-2 1.4-4.6 2.3-7.5 2.3-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.9 39.8 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C40.8 36.6 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>`;
   }
+  function personIconSvg(){
+    return `<svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  }
+  function lockIconSvg(){
+    return `<svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+  }
+  function eyeIconSvg(open){
+    if (open) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+    }
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
 
   // ================= RENDER: LOGIN / SIGNUP =================
   function renderLoginSignup(mode = 'login') {
+    const head = mode === 'login'
+      ? { title: 'Selamat datang!', sub: 'Masuk untuk melanjutkan ke SlowHead AI' }
+      : { title: 'Buat akun baru', sub: 'Daftar buat mulai chat sama SlowHead AI' };
+
     authCardInner.innerHTML = `
+      <div class="auth-card-head">
+        <h2>${head.title}</h2>
+        <p>${head.sub}</p>
+      </div>
+
       <div class="auth-tabs">
         <div class="auth-tab ${mode==='login'?'active':''}" data-mode="login">Masuk</div>
         <div class="auth-tab ${mode==='signup'?'active':''}" data-mode="signup">Daftar</div>
       </div>
       <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
       <form id="authForm">
         <div class="field" id="usernameField" style="display:${mode==='signup'?'block':'none'}">
           <label for="authUsername">Username</label>
-          <input type="text" id="authUsername" autocomplete="username" ${mode==='signup'?'required':''} />
+          <div class="field-input">
+            ${personIconSvg()}
+            <input type="text" id="authUsername" autocomplete="username" placeholder="Pilih username" ${mode==='signup'?'required':''} />
+          </div>
           <div class="field-hint">3-20 karakter, huruf kecil/angka/underscore</div>
         </div>
         <div class="field">
           <label id="identifierLabel" for="authIdentifier">${mode==='login' ? 'Email atau Username' : 'Email'}</label>
-          <input type="text" id="authIdentifier" required autocomplete="${mode==='login'?'username':'email'}" />
+          <div class="field-input">
+            ${personIconSvg()}
+            <input type="text" id="authIdentifier" required autocomplete="${mode==='login'?'username':'email'}" placeholder="${mode==='login' ? 'Masukkan email atau username' : 'Masukkan email'}" />
+          </div>
         </div>
         <div class="field">
           <label for="authPassword">Password</label>
-          <input type="password" id="authPassword" required autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="6" />
+          <div class="field-input">
+            ${lockIconSvg()}
+            <input type="password" id="authPassword" required autocomplete="${mode==='login'?'current-password':'new-password'}" minlength="6" placeholder="Masukkan password" />
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Tampilkan password">${eyeIconSvg(false)}</button>
+          </div>
         </div>
+        ${mode === 'login' ? '<div class="field-row-between"><button type="button" class="forgot-link" id="forgotBtn">Lupa password?</button></div>' : ''}
         <button type="submit" class="auth-submit" id="authSubmit">${mode==='login'?'Masuk':'Daftar'}</button>
       </form>
       <div class="auth-divider">atau</div>
       <button type="button" class="google-btn" id="googleBtn">${googleIconSvg()} Lanjut dengan Google</button>
+      <p class="auth-switch">
+        ${mode==='login' ? 'Belum punya akun? <button type="button" id="switchModeBtn">Daftar sekarang</button>' : 'Udah punya akun? <button type="button" id="switchModeBtn">Masuk di sini</button>'}
+      </p>
       <p class="auth-note">Limit 5 pesan/hari per akun</p>
     `;
 
     const authError = document.getElementById('authError');
+    const authSuccess = document.getElementById('authSuccess');
     const authForm = document.getElementById('authForm');
     const authSubmit = document.getElementById('authSubmit');
     const googleBtn = document.getElementById('googleBtn');
+    const pwToggle = document.getElementById('pwToggle');
+    const pwInput = document.getElementById('authPassword');
+    const switchModeBtn = document.getElementById('switchModeBtn');
 
     document.querySelectorAll('.auth-tab').forEach(tab => {
       tab.addEventListener('click', () => renderLoginSignup(tab.dataset.mode));
     });
+    if (switchModeBtn) {
+      switchModeBtn.addEventListener('click', () => renderLoginSignup(mode === 'login' ? 'signup' : 'login'));
+    }
+
+    pwToggle.addEventListener('click', () => {
+      const show = pwInput.type === 'password';
+      pwInput.type = show ? 'text' : 'password';
+      pwToggle.innerHTML = eyeIconSvg(show);
+      pwToggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+    });
+
+    const forgotBtn = document.getElementById('forgotBtn');
+    if (forgotBtn) {
+      forgotBtn.addEventListener('click', async () => {
+        authError.classList.remove('show');
+        authSuccess.classList.remove('show');
+        const identifier = document.getElementById('authIdentifier').value.trim();
+        let email = identifier;
+        if (!email.includes('@')) {
+          authError.textContent = 'Isi kolom email/username dulu di atas ya (pakai email kalau mau reset password).';
+          authError.classList.add('show');
+          return;
+        }
+        forgotBtn.disabled = true;
+        try {
+          await sendPasswordResetEmail(auth, email);
+          authSuccess.textContent = 'Link reset password udah dikirim ke ' + email + '.';
+          authSuccess.classList.add('show');
+        } catch (err) {
+          authError.textContent = mapAuthError(err.code);
+          authError.classList.add('show');
+        } finally {
+          forgotBtn.disabled = false;
+        }
+      });
+    }
 
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       authError.classList.remove('show');
+      authSuccess.classList.remove('show');
       authSubmit.disabled = true;
       authSubmit.textContent = 'Tunggu...';
       authFlowLock = true;
@@ -696,11 +856,16 @@
     activeId = id; renderSidebar(); renderActiveChat();
     if (window.innerWidth <= 720) sidebar.classList.remove('open');
   }
-  async function persistActiveChat(newMessages, newTitle){
-    if (!currentUid || !activeId) return;
-    const payload = { messages: newMessages, updatedAt: serverTimestamp() };
+  async function persistChat(chatId, messages, newTitle){
+    if (!currentUid || !chatId) return;
+    const payload = { messages, updatedAt: serverTimestamp() };
     if (newTitle) payload.title = newTitle;
-    await updateDoc(doc(db, 'users', currentUid, 'chats', activeId), payload);
+    try {
+      await updateDoc(doc(db, 'users', currentUid, 'chats', chatId), payload);
+    } catch (err) {
+      // chat mungkin udah dihapus user sebelum balasan AI selesai — aman diabaikan
+      console.warn('Gagal simpan chat (mungkin udah dihapus):', err.message);
+    }
   }
 
   function renderSidebar(){
@@ -771,10 +936,16 @@
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (isSending) return; // cegah kirim ganda pas masih nunggu balasan
+
     const text = input.value.trim();
     if (!text || remaining === 0) return;
     const chat = chats[activeId];
     if (!chat) return;
+
+    // Simpan referensi chat & id-nya SEBELUM proses async berjalan, biar
+    // gak ketuker kalau user pindah chat pas AI masih mikir.
+    const currentChatId = chat.id;
 
     isSending = true;
     addBubble('user', text);
@@ -782,7 +953,7 @@
     const isFirstMessage = chat.messages.length === 1;
     if (isFirstMessage) {
       chat.title = text.slice(0, 34) + (text.length > 34 ? '…' : '');
-      chatTitle.textContent = chat.title;
+      if (activeId === currentChatId) chatTitle.textContent = chat.title;
     }
 
     input.value = ''; autoGrow(); sendBtn.disabled = true; addThinking();
@@ -798,23 +969,26 @@
       removeThinking();
 
       if (!res.ok) {
-        addBubble('ai', data.error || 'Gagal dapat jawaban.', true, true);
+        // cuma tampilin bubble error kalau user masih di chat yang sama
+        if (activeId === currentChatId) addBubble('ai', data.error || 'Gagal dapat jawaban.', true, true);
         if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
-        await persistActiveChat(chat.messages, isFirstMessage ? chat.title : undefined);
+        // simpen pesan user-nya ke chat ASLINYA (currentChatId), pakai chat.messages
+        // (bukan ambil ulang dari cache chats[]) biar gak kena race snapshot
+        await persistChat(currentChatId, chat.messages, isFirstMessage ? chat.title : undefined);
         return;
       }
 
-      addBubble('ai', data.reply);
+      if (activeId === currentChatId) addBubble('ai', data.reply);
       chat.messages.push({ role: 'model', text: data.reply });
-      await persistActiveChat(chat.messages, isFirstMessage ? chat.title : undefined);
+      await persistChat(currentChatId, chat.messages, isFirstMessage ? chat.title : undefined);
       if (typeof data.remaining === 'number') { remaining = data.remaining; renderQuota(); }
     } catch (err) {
       removeThinking();
-      addBubble('ai', 'Koneksi gagal. Coba lagi.', true, true);
+      if (activeId === currentChatId) addBubble('ai', 'Koneksi gagal. Coba lagi.', true, true);
     } finally {
       isSending = false;
       sendBtn.disabled = (remaining === 0);
-      input.focus();
+      if (activeId === currentChatId) input.focus();
     }
   });
 
